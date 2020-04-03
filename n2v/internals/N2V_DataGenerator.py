@@ -5,6 +5,7 @@ import tifffile
 from matplotlib import image
 from csbdeep.utils import _raise
 
+
 class N2V_DataGenerator():
     """
     The 'N2V_DataGenerator' enables training and validation data generation for Noise2Void.
@@ -51,7 +52,7 @@ class N2V_DataGenerator():
                 move_axis_to += tuple([-1])
             elif b in 'XYZ':
                 if 'T' in dims:
-                    move_axis_to += tuple([net_axes.index(b)+1])
+                    move_axis_to += tuple([net_axes.index(b) + 1])
                 else:
                     move_axis_to += tuple([net_axes.index(b)])
         imgs = []
@@ -61,7 +62,8 @@ class N2V_DataGenerator():
             elif f.endswith('.png'):
                 imread = image.imread
             elif f.endswith('.jpg') or f.endswith('.jpeg') or f.endswith('.JPEG') or f.endswith('.JPG'):
-                _raise(Exception("JPEG is not supported, because it is not loss-less and breaks the pixel-wise independence assumption."))
+                _raise(Exception(
+                    "JPEG is not supported, because it is not loss-less and breaks the pixel-wise independence assumption."))
             else:
                 _raise("Filetype '{}' is not supported.".format(f))
 
@@ -70,7 +72,7 @@ class N2V_DataGenerator():
 
             img = np.moveaxis(img, move_axis_from, move_axis_to)
 
-            if not ('T' in dims):    
+            if not ('T' in dims):
                 img = img[np.newaxis]
 
             if not ('C' in dims):
@@ -104,7 +106,6 @@ class N2V_DataGenerator():
         files.sort()
         return self.load_imgs(files, dims=dims)
 
-
     def generate_patches_from_list(self, data, num_patches_per_img=None, shape=(256, 256), augment=True, shuffle=False):
         """
         Extracts patches from 'list_data', which is a list of images, and returns them in a 'numpy-array'. The images
@@ -132,7 +133,8 @@ class N2V_DataGenerator():
         patches = []
         for img in data:
             for s in range(img.shape[0]):
-                p = self.generate_patches(img[s][np.newaxis], num_patches=num_patches_per_img, shape=shape, augment=augment)
+                p = self.generate_patches(img[s][np.newaxis], num_patches=num_patches_per_img, shape=shape,
+                                          augment=augment)
                 patches.append(p)
 
         patches = np.concatenate(patches, axis=0)
@@ -166,7 +168,7 @@ class N2V_DataGenerator():
                   The dimensions are 'SZYXC' or 'SYXC'
         """
 
-        patches = self.__extract_patches__(data, num_patches=num_patches, shape=shape, n_dims=len(data.shape)-2)
+        patches = self.__extract_patches__(data, num_patches=num_patches, shape=shape, n_dims=len(data.shape) - 2)
         if shape[-2] == shape[-1]:
             if augment:
                 patches = self.__augment_patches__(patches=patches)
@@ -194,7 +196,7 @@ class N2V_DataGenerator():
                     print("'shape' is too big.")
             elif n_dims == 3:
                 if data.shape[1] > shape[0] and data.shape[2] > shape[1] and data.shape[3] > shape[2]:
-                    for z in range(0, data.shape[1] - shape[0],  shape[0]):
+                    for z in range(0, data.shape[1] - shape[0], shape[0]):
                         for y in range(0, data.shape[2] - shape[1], shape[1]):
                             for x in range(0, data.shape[3] - shape[2], shape[2]):
                                 patches.append(data[:, z:z + shape[0], y:y + shape[1], x:x + shape[2]])
@@ -213,8 +215,8 @@ class N2V_DataGenerator():
                 for i in range(num_patches):
                     y, x = np.random.randint(0, data.shape[1] - shape[0] + 1), np.random.randint(0,
                                                                                                  data.shape[
-                                                                                                          2] - shape[
-                                                                                                          1] + 1)
+                                                                                                     2] - shape[
+                                                                                                     1] + 1)
                     patches.append(data[0, y:y + shape[0], x:x + shape[1]])
 
                 if len(patches) > 1:
@@ -225,8 +227,8 @@ class N2V_DataGenerator():
                 for i in range(num_patches):
                     z, y, x = np.random.randint(0, data.shape[1] - shape[0] + 1), np.random.randint(0,
                                                                                                     data.shape[
-                                                                                                             2] - shape[
-                                                                                                             1] + 1), np.random.randint(
+                                                                                                        2] - shape[
+                                                                                                        1] + 1), np.random.randint(
                         0, data.shape[3] - shape[2] + 1)
                     patches.append(data[0, z:z + shape[0], y:y + shape[1], x:x + shape[2]])
 

@@ -65,17 +65,19 @@ class N2V_DataWrapper(Sequence):
 
     def __getitem__(self, i):
         idx = slice(i * self.batch_size, (i + 1) * self.batch_size)
-        idx = self.perm[idx]
+        idx = self.perm[idx]        # shuffle the images
+        # sample X into patches, assign to X_Batches.
         self.patch_sampler(self.X, self.X_Batches, indices=idx, range=self.range, shape=self.shape)
 
         for c in range(self.n_chan):
             for j in idx:
                 coords = self.get_stratified_coords(self.rand_float, box_size=self.box_size,
-                                                    shape=self.shape)
+                                                    shape=self.shape)   # 66 x 2
 
                 indexing = (j,) + coords + (c,)
                 indexing_mask = (j,) + coords + (c + self.n_chan, )
                 y_val = self.X_Batches[indexing]
+                # replace the value with random value whthin a receptive field.
                 x_val = self.value_manipulation(self.X_Batches[j, ..., c], coords, self.dims)
 
                 self.Y_Batches[indexing] = y_val

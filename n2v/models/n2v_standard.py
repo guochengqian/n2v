@@ -1,6 +1,7 @@
 from csbdeep.models import CARE
 from csbdeep.utils import _raise, axes_check_and_normalize, axes_dict, load_json, save_json
-from csbdeep.internals import nets
+# from csbdeep.internals import nets
+from model import nets
 
 from six import string_types
 from csbdeep.utils.six import Path, FileNotFoundError
@@ -20,6 +21,7 @@ from ..internals.n2v_losses import loss_mae, loss_mse
 from ..utils.n2v_utils import pm_identity, pm_normal_additive, pm_normal_fitted, pm_normal_withoutCP, pm_uniform_withCP
 
 import numpy as np
+
 
 class N2V(CARE):
     """The Noise2Void training scheme to train a standard CARE network for image restoration and enhancement.
@@ -64,16 +66,20 @@ class N2V(CARE):
     def __init__(self, config, name=None, basedir='.'):
         """See class docstring."""
 
-        config is None or isinstance(config,self._config_class) or _raise (
-            ValueError("Invalid configuration of type '%s', was expecting type '%s'." % (type(config).__name__, self._config_class.__name__))
+        config is None or isinstance(config, self._config_class) or _raise(
+            ValueError("Invalid configuration of type '%s', was expecting type '%s'." % (
+            type(config).__name__, self._config_class.__name__))
         )
         if config is not None and not config.is_valid():
             invalid_attr = config.is_valid(True)[1]
             raise ValueError('Invalid configuration attributes: ' + ', '.join(invalid_attr))
-        (not (config is None and basedir is None)) or _raise(ValueError("No config provided and cannot be loaded from disk since basedir=None."))
+        (not (config is None and basedir is None)) or _raise(
+            ValueError("No config provided and cannot be loaded from disk since basedir=None."))
 
-        name is None or (isinstance(name,string_types) and len(name)>0) or _raise(ValueError("No valid name: '%s'" % str(name)))
-        basedir is None or isinstance(basedir,(string_types,Path)) or _raise(ValueError("No valid basedir: '%s'" % str(basedir)))
+        name is None or (isinstance(name, string_types) and len(name) > 0) or _raise(
+            ValueError("No valid name: '%s'" % str(name)))
+        basedir is None or isinstance(basedir, (string_types, Path)) or _raise(
+            ValueError("No valid basedir: '%s'" % str(basedir)))
         self.config = config
         self.name = name if name is not None else datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S.%f")
         self.basedir = Path(basedir) if basedir is not None else None
@@ -89,21 +95,21 @@ class N2V(CARE):
         if config is None:
             self._find_and_load_weights()
 
-
     def _build(self):
         return self._build_unet(
-            n_dim           = self.config.n_dim,
-            n_channel_out   = self.config.n_channel_out,
-            residual        = self.config.unet_residual,
-            n_depth         = self.config.unet_n_depth,
-            kern_size       = self.config.unet_kern_size,
-            n_first         = self.config.unet_n_first,
-            last_activation = self.config.unet_last_activation,
-            batch_norm      = self.config.batch_norm
+            n_dim=self.config.n_dim,
+            n_channel_out=self.config.n_channel_out,
+            residual=self.config.unet_residual,
+            n_depth=self.config.unet_n_depth,
+            kern_size=self.config.unet_kern_size,
+            n_first=self.config.unet_n_first,
+            last_activation=self.config.unet_last_activation,
+            batch_norm=self.config.batch_norm
         )(self.config.unet_input_shape)
 
-
-    def _build_unet(self, n_dim=2, n_depth=2, kern_size=3, n_first=32, n_channel_out=1, residual=True, last_activation='linear', batch_norm=True):
+    # todo: UNet is just a normal architecture. This is strange.
+    def _build_unet(self, n_dim=2, n_depth=2, kern_size=3, n_first=32, n_channel_out=1, residual=True,
+                    last_activation='linear', batch_norm=True):
         """Construct a common CARE neural net based on U-Net [1]_ and residual learning [2]_ to be used for image restoration/enhancement.
            Parameters
            ----------
@@ -139,11 +145,10 @@ class N2V(CARE):
 
         def _build_this(input_shape):
             return nets.custom_unet(input_shape, last_activation, n_depth, n_first, (kern_size,) * n_dim,
-                               pool_size=(2,) * n_dim, n_channel_out=n_channel_out, residual=residual,
-                               prob_out=False, batch_norm=batch_norm)
+                                    pool_size=(2,) * n_dim, n_channel_out=n_channel_out, residual=residual,
+                                    prob_out=False, batch_norm=batch_norm)
 
         return _build_this
-
 
     def train(self, X, validation_X, epochs=None, steps_per_epoch=None):
         """Train the neural network with the given data.
@@ -165,15 +170,14 @@ class N2V(CARE):
             See `Keras training history <https://keras.io/models/model/#fit>`_.
 
         """
-
         n_train, n_val = len(X), len(validation_X)
         frac_val = (1.0 * n_val) / (n_train + n_val)
         frac_warn = 0.05
         if frac_val < frac_warn:
-            warnings.warn("small number of validation images (only %.1f%% of all images)" % (100*frac_val))
-        axes = axes_check_and_normalize('S'+self.config.axes,X.ndim)
+            warnings.warn("small number of validation images (only %.1f%% of all images)" % (100 * frac_val))
+        axes = axes_check_and_normalize('S' + self.config.axes, X.ndim)
         ax = axes_dict(axes)
-        div_by = 2**self.config.unet_n_depth
+        div_by = 2 ** self.config.unet_n_depth
         axes_relevant = ''.join(a for a in 'XYZT' if a in axes)
         val_num_pix = 1
         train_num_pix = 1
@@ -186,7 +190,7 @@ class N2V(CARE):
             if n % div_by != 0:
                 raise ValueError(
                     "training images must be evenly divisible by %d along axes %s"
-                    " (axis %s has incompatible size %d)" % (div_by,axes_relevant,a,n)
+                    " (axis %s has incompatible size %d)" % (div_by, axes_relevant, a, n)
                 )
 
         if epochs is None:
@@ -199,6 +203,7 @@ class N2V(CARE):
 
         manipulator = eval('pm_{0}({1})'.format(self.config.n2v_manipulator, str(self.config.n2v_neighborhood_radius)))
 
+        # todo: why need cat means and stds for the avg of images.
         means = np.array([float(mean) for mean in self.config.means], ndmin=len(X.shape), dtype=np.float32)
         stds = np.array([float(std) for std in self.config.stds], ndmin=len(X.shape), dtype=np.float32)
 
@@ -207,18 +212,21 @@ class N2V(CARE):
 
         # Here we prepare the Noise2Void data. Our input is the noisy data X and as target we take X concatenated with
         # a masking channel. The N2V_DataWrapper will take care of the pixel masking and manipulating.
+        # todo: check is there a blind spot in the input image. Into patches. This is a data Generater
         training_data = N2V_DataWrapper(X, np.concatenate((X, np.zeros(X.shape, dtype=X.dtype)), axis=axes.index('C')),
-                                                    self.config.train_batch_size, self.config.n2v_perc_pix,
-                                                    self.config.n2v_patch_shape, manipulator)
+                                        self.config.train_batch_size, self.config.n2v_perc_pix,
+                                        self.config.n2v_patch_shape, manipulator)
 
         # validation_Y is also validation_X plus a concatenated masking channel.
         # To speed things up, we precompute the masking vo the validation data.
-        validation_Y = np.concatenate((validation_X, np.zeros(validation_X.shape, dtype=validation_X.dtype)), axis=axes.index('C'))
+        validation_Y = np.concatenate((validation_X, np.zeros(validation_X.shape, dtype=validation_X.dtype)),
+                                      axis=axes.index('C'))
         n2v_utils.manipulate_val_data(validation_X, validation_Y,
-                                                        perc_pix=self.config.n2v_perc_pix,
-                                                        shape=val_patch_shape,
-                                                        value_manipulation=manipulator)
+                                      perc_pix=self.config.n2v_perc_pix,
+                                      shape=val_patch_shape,
+                                      value_manipulation=manipulator)
 
+        # todo: steps_Per_epoch. None
         history = self.keras_model.fit_generator(generator=training_data, validation_data=(validation_X, validation_Y),
                                                  epochs=epochs, steps_per_epoch=steps_per_epoch,
                                                  callbacks=self.callbacks, verbose=1)
@@ -236,7 +244,6 @@ class N2V(CARE):
                     pass
 
         return history
-
 
     def prepare_for_training(self, optimizer=None, **kwargs):
         """Prepare for neural network training.
@@ -264,8 +271,11 @@ class N2V(CARE):
         if self.basedir is not None:
             if self.config.train_checkpoint is not None:
                 from keras.callbacks import ModelCheckpoint
-                self.callbacks.append(ModelCheckpoint(str(self.logdir / self.config.train_checkpoint), save_best_only=True,  save_weights_only=True))
-                self.callbacks.append(ModelCheckpoint(str(self.logdir / 'weights_now.h5'),             save_best_only=False, save_weights_only=True))
+                self.callbacks.append(
+                    ModelCheckpoint(str(self.logdir / self.config.train_checkpoint), save_best_only=True,
+                                    save_weights_only=True))
+                self.callbacks.append(
+                    ModelCheckpoint(str(self.logdir / 'weights_now.h5'), save_best_only=False, save_weights_only=True))
 
             if self.config.train_tensorboard:
                 from csbdeep.utils.tf import CARETensorBoard
@@ -286,8 +296,8 @@ class N2V(CARE):
                                 else:
                                     val_data = list(v[:self.n_images] for v in self.validation_data)
                                 # GIT issue 20: We need to remove the masking component from the validation data to prevent crash.
-                                end_index = (val_data[1].shape)[-1]//2
-                                val_data[1] = val_data[1][...,:end_index]
+                                end_index = (val_data[1].shape)[-1] // 2
+                                val_data[1] = val_data[1][..., :end_index]
                                 feed_dict = dict(zip(tensors, val_data))
                                 result = self.sess.run([self.merged], feed_dict=feed_dict)
                                 summary_str = result[0]
@@ -305,7 +315,9 @@ class N2V(CARE):
 
                         self.writer.flush()
 
-                self.callbacks.append(N2VTensorBoard(log_dir=str(self.logdir), prefix_with_timestamp=False, n_images=3, write_images=True, prob_out=False))
+                self.callbacks.append(
+                    N2VTensorBoard(log_dir=str(self.logdir), prefix_with_timestamp=False, n_images=3, write_images=True,
+                                   prob_out=False))
 
         if self.config.train_reduce_lr is not None:
             from keras.callbacks import ReduceLROnPlateau
@@ -316,13 +328,11 @@ class N2V(CARE):
 
         self._model_prepared = True
 
-
     def prepare_model(self, model, optimizer, loss, metrics=('mse', 'mae')):
         """ TODO """
 
         from keras.optimizers import Optimizer
         isinstance(optimizer, Optimizer) or _raise(ValueError())
-
 
         if loss == 'mse':
             loss_standard = eval('loss_mse()')
@@ -337,14 +347,11 @@ class N2V(CARE):
 
         return callbacks
 
-
     def __normalize__(self, data, means, stds):
         return (data - means) / stds
 
-
     def __denormalize__(self, data, means, stds):
         return (data * stds) + means
-
 
     def predict(self, img, axes, resizer=PadAndCropResizer(), n_tiles=None):
         """
@@ -382,7 +389,8 @@ class N2V(CARE):
             normalized = self.__normalize__(img[..., np.newaxis], means, stds)
             normalized = normalized[..., 0]
 
-        pred = self._predict_mean_and_scale(normalized, axes=new_axes, normalizer=None, resizer=resizer, n_tiles=n_tiles)[0]
+        pred = \
+        self._predict_mean_and_scale(normalized, axes=new_axes, normalizer=None, resizer=resizer, n_tiles=n_tiles)[0]
 
         pred = self.__denormalize__(pred, means, stds)
 
@@ -390,11 +398,11 @@ class N2V(CARE):
             pred = np.moveaxis(pred, -1, axes.index('C'))
 
         return pred
-    
+
     def _set_logdir(self):
         self.logdir = self.basedir / self.name
 
-        config_file =  self.logdir / 'config.json'
+        config_file = self.logdir / 'config.json'
         if self.config is None:
             if config_file.exists():
                 config_dict = load_json(str(config_file))
@@ -406,10 +414,11 @@ class N2V(CARE):
                 raise FileNotFoundError("config file doesn't exist: %s" % str(config_file.resolve()))
         else:
             if self.logdir.exists():
-                warnings.warn('output path for model already exists, files may be overwritten: %s' % str(self.logdir.resolve()))
+                warnings.warn(
+                    'output path for model already exists, files may be overwritten: %s' % str(self.logdir.resolve()))
             self.logdir.mkdir(parents=True, exist_ok=True)
             save_json(vars(self.config), str(config_file))
-    
+
     @property
     def _config_class(self):
         return N2VConfig
