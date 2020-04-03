@@ -8,8 +8,8 @@
 
 # module load, uncommet if using local machine
 #module purge
-#module load gcc
-#module load cuda/10.1.105
+module load gcc/7.4.0
+module load cuda/10.0.130/
 
 # make sure your annaconda3 is added to bashrc
 #source activate
