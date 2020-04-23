@@ -203,7 +203,6 @@ class N2V(CARE):
 
         manipulator = eval('pm_{0}({1})'.format(self.config.n2v_manipulator, str(self.config.n2v_neighborhood_radius)))
 
-        # todo: why need cat means and stds for the avg of images.
         means = np.array([float(mean) for mean in self.config.means], ndmin=len(X.shape), dtype=np.float32)
         stds = np.array([float(std) for std in self.config.stds], ndmin=len(X.shape), dtype=np.float32)
 
@@ -212,7 +211,6 @@ class N2V(CARE):
 
         # Here we prepare the Noise2Void data. Our input is the noisy data X and as target we take X concatenated with
         # a masking channel. The N2V_DataWrapper will take care of the pixel masking and manipulating.
-        # todo: check is there a blind spot in the input image. Into patches. This is a data Generater
         training_data = N2V_DataWrapper(X, np.concatenate((X, np.zeros(X.shape, dtype=X.dtype)), axis=axes.index('C')),
                                         self.config.train_batch_size, self.config.n2v_perc_pix,
                                         self.config.n2v_patch_shape, manipulator)
