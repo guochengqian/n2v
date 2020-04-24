@@ -68,7 +68,7 @@ config = N2VConfig(X, unet_kern_size=3,
                    n2v_manipulator='uniform_withCP', n2v_neighborhood_radius=2)
 vars(config)
 
-model = N2V(config, args.exp_name, basedir=args.ckpt_dir)
+model = N2V(config, args.exp_name)
 model.prepare_for_training(metrics=())
 
 
