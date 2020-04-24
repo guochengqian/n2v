@@ -134,12 +134,12 @@ class N2VConfig(argparse.Namespace):
     
             self.train_loss            = 'mae'
             self.train_epochs          = 100
-            self.train_steps_per_epoch = None
+            self.train_steps_per_epoch = 400   # todo: None
             self.train_learning_rate   = 0.0004
             self.train_batch_size      = 16
             self.train_tensorboard     = True
             self.train_checkpoint      = 'weights_best.h5'
-            self.train_reduce_lr       = {'factor': 0.5, 'patience': 150}
+            self.train_reduce_lr       = {'factor': 0.5, 'patience': 10}    # {'factor': 0.5, 'patience': 160}  # 16 times.
             self.batch_norm            = True
             self.n2v_perc_pix           = 1.5
             self.n2v_patch_shape       = (64, 64) if self.n_dim==2 else (64, 64, 64)
