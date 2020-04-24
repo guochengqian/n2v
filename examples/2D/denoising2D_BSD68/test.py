@@ -89,10 +89,6 @@ def PSNR(gt, img):
     return 20 * np.log10(255) - 10 * np.log10(mse)
 
 
-
-# Weights corresponding to the smallest validation loss
-# Smallest validation loss does not necessarily correspond to best performance,
-# because the loss is computed to noisy target pixels.
 model.load_weights(os.path.join(args.pretrained_model, 'weights_best.h5'))
 # % show images.
 pred = []
@@ -103,10 +99,9 @@ for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    p_ = np.clip(p_, 0, 255.)  # add.
+    p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
 
     pred.append(p_)
-    # psnrs.append(PSNR(gt, p_))
     psnrs.append(compare_psnr(gt, p_, data_range=255.))
     ssims.append(compare_ssim(gt, p_, data_range=255.))
 
@@ -150,11 +145,10 @@ for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    p_ = np.clip(p_, 0, 255.)  # add.
+    p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
 
     pred.append(p_)
-    psnrs.append(PSNR(gt, p_))
-    # psnrs.append(compare_psnr(gt, p_, data_range=255.))
+    psnrs.append(compare_psnr(gt, p_, data_range=255.))
     ssims.append(compare_ssim(gt, p_, data_range=255.))
 
     # plt.figure(figsize=(20,20))

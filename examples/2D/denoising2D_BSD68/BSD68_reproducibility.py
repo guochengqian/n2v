@@ -121,7 +121,7 @@ for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    p_ = np.clip(p_, 0, 255.)  # add.
+    p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
 
     pred.append(p_)
     psnrs.append(compare_psnr(gt, p_, data_range=255.))
@@ -166,7 +166,7 @@ for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    p_ = np.clip(p_, 0, 255.)  # add.
+    p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
 
     pred.append(p_)
     psnrs.append(compare_psnr(gt, p_, data_range=255.))
