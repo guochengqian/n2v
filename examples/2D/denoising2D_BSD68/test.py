@@ -153,8 +153,8 @@ for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
     p_ = np.clip(p_, 0, 255.)  # add.
 
     pred.append(p_)
-    # psnrs.append(PSNR(gt, p_))
-    psnrs.append(compare_psnr(gt, p_, data_range=255.))
+    psnrs.append(PSNR(gt, p_))
+    # psnrs.append(compare_psnr(gt, p_, data_range=255.))
     ssims.append(compare_ssim(gt, p_, data_range=255.))
 
     # plt.figure(figsize=(20,20))
