@@ -84,6 +84,12 @@ test_data = np.load('data/BSD68_reproducibility_data/test/bsd68_gaussian25.npy',
 from skimage.measure import compare_psnr, compare_ssim
 import cv2
 
+def PSNR(gt, img):
+    mse = np.mean(np.square(gt - img))
+    return 20 * np.log10(255) - 10 * np.log10(mse)
+
+
+
 # Weights corresponding to the smallest validation loss
 # Smallest validation loss does not necessarily correspond to best performance,
 # because the loss is computed to noisy target pixels.
@@ -100,7 +106,8 @@ for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
     p_ = np.clip(p_, 0, 255.)  # add.
 
     pred.append(p_)
-    psnrs.append(compare_psnr(gt, p_, data_range=255.))
+    psnrs.append(PSNR(gt, p_))
+    # psnrs.append(compare_psnr(gt, p_, data_range=255.))
     ssims.append(compare_ssim(gt, p_, data_range=255.))
 
     # plt.figure(figsize=(20,20))
@@ -137,15 +144,17 @@ model.load_weights(os.path.join(args.pretrained_model, 'weights_last.h5'))
 pred = []
 psnrs = []
 ssims = []
+
 for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
-    img = np.clip(img, 0, 255.)  # add.
+    # img = np.clip(img, 0, 255.)  # add.
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    p_ = np.clip(p_, 0, 255.)  # add.
+    # p_ = np.clip(p_, 0, 255.)  # add.
 
     pred.append(p_)
-    psnrs.append(compare_psnr(gt, p_, data_range=255.))
+    psnrs.append(PSNR(gt, p_))
+    # psnrs.append(compare_psnr(gt, p_, data_range=255.))
     ssims.append(compare_ssim(gt, p_, data_range=255.))
 
     # plt.figure(figsize=(20,20))
