@@ -107,7 +107,6 @@ class N2V(CARE):
             batch_norm=self.config.batch_norm
         )(self.config.unet_input_shape)
 
-    # todo: UNet is just a normal architecture. This is strange.
     def _build_unet(self, n_dim=2, n_depth=2, kern_size=3, n_first=32, n_channel_out=1, residual=True,
                     last_activation='linear', batch_norm=True):
         """Construct a common CARE neural net based on U-Net [1]_ and residual learning [2]_ to be used for image restoration/enhancement.
@@ -284,7 +283,6 @@ class N2V(CARE):
 
                         if self.validation_data and self.freq:
                             if epoch % self.freq == 0:
-                                # TODO: implement batched calls to sess.run
                                 # (current call will likely go OOM on GPU)
                                 tensors = self.model.inputs + self.gt_outputs + self.model.sample_weights
                                 if self.model.uses_learning_phase:

@@ -8,28 +8,6 @@ from keras.layers import Dropout, Activation, BatchNormalization
 from keras.layers import Conv2D, MaxPooling2D, UpSampling2D, Conv3D, MaxPooling3D, UpSampling3D
 from keras.layers.merge import Concatenate, Add
 import tensorflow as tf
-from .utils import pairwise_distance, knn, get_edge_feature
-
-
-def GCN(filters, batch_norm=True, k=20, name='GCN'):
-    def _func(img):
-        B = tf.shape(img)[0]
-        H = tf.shape(img)[1]
-        W = tf.shape(img)[2]
-        C = img.get_shape()[3]
-
-        col = tf.reshape(img, [B, H*W, C])
-        adj_matrix = pairwise_distance(col)
-        nn_idx = knn(adj_matrix, k=k)
-        edge_feature = get_edge_feature(col, nn_idx=nn_idx, k=k)    # channels should not be none
-
-        col = conv_block2(filters, 1, 1, batch_norm=batch_norm, name=name)(edge_feature)
-        col = tf.reduce_max(col, axis=-2, keep_dims=True)
-
-        img = tf.reshape(col, [B, H, W, filters])
-
-        return img
-    return _func
 
 
 def conv_block2(n_filter, n1, n2,
@@ -82,9 +60,7 @@ def unet_block(n_depth=2, n_filter_base=16, kernel_size=(3, 3), n_conv_per_depth
                dropout=0.0,
                last_activation=None,
                pool=(2, 2),
-               prefix='',
-               use_gcn=False,
-               k=20):
+               prefix=''):
     if len(pool) != len(kernel_size):
         raise ValueError('kernel and pool sizes must match.')
     n_dim = len(kernel_size)
@@ -115,11 +91,6 @@ def unet_block(n_depth=2, n_filter_base=16, kernel_size=(3, 3), n_conv_per_depth
                                    activation=activation,
                                    batch_norm=batch_norm, name=_name("down_level_%s_no_%s" % (n, i)))(layer)
 
-            # todo: add GCN in after each block.
-            if use_gcn:
-                layer = GCN(n_filter_base * 2 ** n, batch_norm=batch_norm,
-                            name=_name("down_level_GCN_%s" % n), k=k)(layer)
-
             skip_layers.append(layer)
             layer = pooling(pool, name=_name("max_%s" % n))(layer)
 
@@ -135,11 +106,6 @@ def unet_block(n_depth=2, n_filter_base=16, kernel_size=(3, 3), n_conv_per_depth
                            activation=activation,
                            batch_norm=batch_norm, name=_name("middle_%s" % n_conv_per_depth))(layer)
 
-        # todo: add GCN in after each block.
-        if use_gcn:
-            layer = GCN(n_filter_base * 2 ** max(0, n_depth - 1),
-                        batch_norm=batch_norm, name=_name("middle_GCN_%s" % n_conv_per_depth), k=k)(layer)
-
         # ...and up with skip layers
         for n in reversed(range(n_depth)):
             layer = Concatenate(axis=channel_axis)([upsampling(pool)(layer), skip_layers[n]])
@@ -148,11 +114,6 @@ def unet_block(n_depth=2, n_filter_base=16, kernel_size=(3, 3), n_conv_per_depth
                                    dropout=dropout,
                                    activation=activation,
                                    batch_norm=batch_norm, name=_name("up_level_%s_no_%s" % (n, i)))(layer)
-
-            # todo: add GCN in after each block.
-            if use_gcn:
-                layer = GCN(n_filter_base * 2 ** n,
-                            batch_norm=batch_norm, name=_name("up_level_GCN_%s" % n), k=k)(layer)
 
             layer = conv_block(n_filter_base * 2 ** max(0, n - 1), *kernel_size,
                                dropout=dropout,

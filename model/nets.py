@@ -133,7 +133,6 @@ def common_unet_by_name(model):
     >>> model = common_unet_by_name('resunet2_1_3_16_1out')(input_shape)
     >>> # equivalent to: model = common_unet(2, 1,3,16, 1, True, False)(input_shape)
 
-    Todo
     ----
     Backslashes in docstring for regexp not rendered correctly.
 

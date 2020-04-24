@@ -61,7 +61,7 @@ print(X_val.shape)
 
 
 # IMPORTANT!! I add clip
-X = np.clip(X, 0, 255.)
+X = np.clip(X, 0, 255.).astype(np.uint8).astype(np.float32)
 X_val = np.clip(X_val, 0, 255.)
 
 config = N2VConfig(X, unet_kern_size=3,
@@ -102,7 +102,7 @@ groundtruth_data = np.load('data/BSD68_reproducibility_data/test/bsd68_groundtru
 
 
 test_data = np.load('data/BSD68_reproducibility_data/test/bsd68_gaussian25.npy', allow_pickle=True)
-
+test_data = np.clip(test_data, 0, 255.).astype(np.uint8).astype(np.float32)
 # In[13]:
 
 from skimage.measure import compare_psnr, compare_ssim
@@ -117,8 +117,6 @@ pred = []
 psnrs = []
 ssims = []
 for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
-    img = np.clip(img, 0, 255.)  # add.
-
     p_ = model.predict(img.astype(np.float32), 'YX')
 
     p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
@@ -162,8 +160,6 @@ pred = []
 psnrs = []
 ssims = []
 for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
-    img = np.clip(img, 0, 255.)  # add.
-
     p_ = model.predict(img.astype(np.float32), 'YX')
 
     p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.

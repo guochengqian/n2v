@@ -55,7 +55,7 @@ print(X_val.shape)
 
 
 # IMPORTANT!! I add clip
-X = np.clip(X, 0, 255.)
+X = np.round(np.clip(X, 0, 255.))
 X_val = np.clip(X_val, 0, 255.)
 
 
@@ -78,7 +78,7 @@ groundtruth_data = np.load('data/BSD68_reproducibility_data/test/bsd68_groundtru
 
 
 test_data = np.load('data/BSD68_reproducibility_data/test/bsd68_gaussian25.npy', allow_pickle=True)
-
+# In[13]:
 # In[13]:
 
 from skimage.measure import compare_psnr, compare_ssim
@@ -95,15 +95,17 @@ pred = []
 psnrs = []
 ssims = []
 for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
-    img = np.clip(img, 0, 255.)  # add.
+    img = np.round(np.clip(img, 0, 255.))
 
     p_ = model.predict(img.astype(np.float32), 'YX')
-
-    p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
+    # if p_.max()>255 or p_.min()<0:
+    #     print(compare_psnr(gt, p_, data_range=255.))
+    p_ = np.round(np.clip(p_, 0, 255.))  # prediction should be clipped.
 
     pred.append(p_)
     psnrs.append(compare_psnr(gt, p_, data_range=255.))
     ssims.append(compare_ssim(gt, p_, data_range=255.))
+    # logging.info('Best ckpt. {} \t psnr:{:.2f} \t ssim: {:.2f}'.format(i, psnrs[-1], ssims[-1]))
 
     # plt.figure(figsize=(20,20))
     # # We show the noisy input...
@@ -141,11 +143,11 @@ psnrs = []
 ssims = []
 
 for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
-    img = np.clip(img, 0, 255.)  # add.
+    img = np.round(np.clip(img, 0, 255.))  # add.
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    p_ = np.clip(p_, 0, 255.)  # prediction should be clipped.
+    p_ = np.round(np.clip(p_, 0, 255.))  # prediction should be clipped.
 
     pred.append(p_)
     psnrs.append(compare_psnr(gt, p_, data_range=255.))
