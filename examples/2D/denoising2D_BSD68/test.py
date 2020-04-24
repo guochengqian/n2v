@@ -131,7 +131,7 @@ logging.info('Best psnr:{:.2f} \t ssim: {:.3f}'.format(np.round(np.mean(psnrs), 
 
 
 # The weights of the converged network.
-model.load_weights('weights_last.h5')
+model.load_weights(os.path.join(args.pretrained_model, 'weights_last.h5'))
 
 # % show images.
 pred = []
