@@ -7,7 +7,7 @@
 
 # In[1]:
 
-
+import __init__
 # We import all our dependencies.
 from n2v.models import N2VConfig, N2V
 import numpy as np
