@@ -146,11 +146,11 @@ psnrs = []
 ssims = []
 
 for i, (gt, img) in enumerate(zip(groundtruth_data, test_data)):
-    # img = np.clip(img, 0, 255.)  # add.
+    img = np.clip(img, 0, 255.)  # add.
 
     p_ = model.predict(img.astype(np.float32), 'YX')
 
-    # p_ = np.clip(p_, 0, 255.)  # add.
+    p_ = np.clip(p_, 0, 255.)  # add.
 
     pred.append(p_)
     # psnrs.append(PSNR(gt, p_))
