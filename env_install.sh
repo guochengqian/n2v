@@ -19,6 +19,9 @@ conda create --name n2v
 conda activate n2v
 conda install tensorflow-gpu=1.14 keras=2.2.4 cudatoolkit=10.0 python=3.6.8 numpy=1.16 jupyter
 pip install -e .
+pip install scikit-image
+
+
 
 
 
